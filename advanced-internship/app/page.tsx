@@ -1,3 +1,4 @@
+"use client"
 import AiFillFileText from "./components/AiFillFileText";
 import AiFillBulb from "./components/AiFillBulb";
 import AiFillAudio from "./components/AiFillAudio";
@@ -5,40 +6,102 @@ import BsStarFill from "./components/BsStarFill";
 import BiCrown from "./components/BiCrown";
 import BsStarHalf from "./components/BsStarHalf";
 import RiLeafLine from "./components/RiLeafLine";
-import { SignInButton } from "@clerk/nextjs"
+import { SignInButton, useSignIn } from "@clerk/nextjs";
+import { useState } from "react";
 
 export default function Home() {
+  const signInState = useSignIn();
+  const [isGuestLoading, setIsGuestLoading] = useState(false);
+  const [guestError, setGuestError] = useState<string | null>(null);
 
-const { ClerkClient } = require("@clerk/nextjs");
+  async function guestLogin() {
+    const signIn = signInState.signIn;
 
-async function guestLogin(req, res) {
-  const clerk = new ClerkClient();
-  const { email, password } = req.body;
-  const { user, session } = await clerk.signIn({
-    identifier: email,
-    password,
-    redirectUrl: "/dashboard"
-  });
-  res.json({ user, session });
-}
+    if (!signIn || isGuestLoading) {
+      return;
+    }
 
+    setIsGuestLoading(true);
+    setGuestError(null);
+
+    try {
+      const response = await fetch("/api/guest", { method: "POST" });
+      const result: {
+        ticket?: string;
+        error?: string;
+        detail?: string;
+        stage?: string;
+        clerkErrors?: Array<{
+          code?: unknown;
+          message?: unknown;
+          longMessage?: unknown;
+        }>;
+      } = await response.json();
+
+      if (!response.ok || !result.ticket) {
+        const clerkErrorMessage = result.clerkErrors?.[0]?.longMessage;
+        throw new Error(
+          (typeof clerkErrorMessage === "string" && clerkErrorMessage) ||
+            result.detail ||
+            result.error ||
+            "Unable to start guest sign-in.",
+        );
+      }
+
+      const { error: ticketError } = await signIn.ticket({
+        ticket: result.ticket,
+      });
+
+      if (ticketError) {
+        throw ticketError;
+      }
+
+      if (signIn.status !== "complete" || !signIn.createdSessionId) {
+        throw new Error(
+          `Clerk guest sign-in did not complete (status: ${signIn.status}).`,
+        );
+      }
+
+      const { error: finalizeError } = await signIn.finalize();
+      if (finalizeError) {
+        throw finalizeError;
+      }
+
+      window.location.assign("/dashboard");
+    } catch {
+      setGuestError("Guest sign-in failed. Please try again.");
+      setIsGuestLoading(false);
+    }
+  }
 
   return (
     <>
-      <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <link rel="stylesheet" href="./style.css" />
-      <title>Summarist Home Page</title>
       <nav className="nav">
         <div className="nav__wrapper">
           <figure className="nav__img--mask">
-            <img className="nav__img" src="" alt="logo" />
+            <img className="nav__img" src="./favicon.ico" alt="logo" />
           </figure>
           <ul className="nav__list--wrapper">
-            <SignInButton mode="modal">
-            <li className="nav__list nav__list--login">Login</li>
-            </SignInButton>
-            <li className="nav__list nav__list--login" onClick={guestLogin}>Guest</li>
+              <li>
+                <SignInButton mode="modal" fallbackRedirectUrl="/">
+                  <button
+                    type="button"
+                    className="nav__list nav__list--login"
+                  >
+                    Login
+                  </button>
+                </SignInButton>
+              </li>
+            <li>
+              <button
+                type="button"
+                className="nav__list nav__list--login"
+                onClick={guestLogin}
+                disabled={isGuestLoading}
+              >
+                {isGuestLoading ? "Signing in..." : "Guest"}
+              </button>
+            </li>
             <li className="nav__list nav__list--mobile">About</li>
             <li className="nav__list nav__list--mobile">Contact</li>
             <li className="nav__list nav__list--mobile">Help</li>
@@ -61,7 +124,11 @@ async function guestLogin(req, res) {
                   <br className="remove--tablet" />
                   and even people who don’t like to read.
                 </div>
-                <button className="btn home__cta--btn">Login</button>
+                <SignInButton mode="modal" fallbackRedirectUrl="/">
+                  <button type="button" className="btn home__cta--btn">
+                    Login
+                  </button>
+                </SignInButton>
               </div>
               <figure className="landing__image--mask">
                 <img src="" alt="landing" />
@@ -249,7 +316,11 @@ async function guestLogin(req, res) {
               </div>
             </div>
             <div className="reviews__btn--wrapper">
-              <button className="btn home__cta--btn">Login</button>
+              <SignInButton mode="modal" fallbackRedirectUrl="/">
+                <button type="button" className="btn home__cta--btn">
+                  Login
+                </button>
+              </SignInButton>
             </div>
           </div>
         </div>
