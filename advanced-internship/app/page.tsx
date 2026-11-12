@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import AiFillFileText from "./components/AiFillFileText";
 import AiFillBulb from "./components/AiFillBulb";
 import AiFillAudio from "./components/AiFillAudio";
@@ -6,13 +6,14 @@ import BsStarFill from "./components/BsStarFill";
 import BiCrown from "./components/BiCrown";
 import BsStarHalf from "./components/BsStarHalf";
 import RiLeafLine from "./components/RiLeafLine";
-import { SignInButton, useSignIn } from "@clerk/nextjs";
+import { Show, SignInButton, useSignIn } from "@clerk/nextjs";
 import { useState } from "react";
 
 export default function Home() {
   const signInState = useSignIn();
   const [isGuestLoading, setIsGuestLoading] = useState(false);
   const [guestError, setGuestError] = useState<string | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   async function guestLogin() {
     const signIn = signInState.signIn;
@@ -82,26 +83,26 @@ export default function Home() {
             <img className="nav__img" src="./favicon.ico" alt="logo" />
           </figure>
           <ul className="nav__list--wrapper">
+            <Show when="signed-out">
               <li>
                 <SignInButton mode="modal" fallbackRedirectUrl="/">
-                  <button
-                    type="button"
-                    className="nav__list nav__list--login"
-                  >
+                  <button type="button" className="nav__list nav__list--login">
                     Login
                   </button>
                 </SignInButton>
               </li>
-            <li>
-              <button
-                type="button"
-                className="nav__list nav__list--login"
-                onClick={guestLogin}
-                disabled={isGuestLoading}
-              >
-                {isGuestLoading ? "Signing in..." : "Guest"}
-              </button>
-            </li>
+              <li>
+                <button
+                  type="button"
+                  className="nav__list nav__list--login"
+                  onClick={guestLogin}
+                  disabled={isGuestLoading}
+                >
+                  {isGuestLoading ? "Signing in..." : "Guest"}
+                </button>
+              </li>
+            </Show>
+
             <li className="nav__list nav__list--mobile">About</li>
             <li className="nav__list nav__list--mobile">Contact</li>
             <li className="nav__list nav__list--mobile">Help</li>
