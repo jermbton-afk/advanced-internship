@@ -1,4 +1,5 @@
 "use client";
+
 import AiFillFileText from "./components/AiFillFileText";
 import AiFillBulb from "./components/AiFillBulb";
 import AiFillAudio from "./components/AiFillAudio";
@@ -8,12 +9,13 @@ import BsStarHalf from "./components/BsStarHalf";
 import RiLeafLine from "./components/RiLeafLine";
 import { Show, SignInButton, UserButton, useSignIn } from "@clerk/nextjs";
 import { useState } from "react";
+import logo from "./assets/logo.png"
 
 export default function Home() {
   const signInState = useSignIn();
   const [isGuestLoading, setIsGuestLoading] = useState(false);
   const [guestError, setGuestError] = useState<string | null>(null);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
 
   async function guestLogin() {
     const signIn = signInState.signIn;
@@ -80,7 +82,7 @@ export default function Home() {
       <nav className="nav">
         <div className="nav__wrapper">
           <figure className="nav__img--mask">
-            <img className="nav__img" src="./favicon.ico" alt="logo" />
+            <img className="nav__img" src={logo} alt="logo" />
           </figure>
           <ul className="nav__list--wrapper">
             <Show when="signed-out">
