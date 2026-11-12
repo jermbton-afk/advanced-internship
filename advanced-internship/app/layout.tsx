@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import {
   ClerkProvider,
-  Show,
-  UserButton,
 } from "@clerk/nextjs";
 import { Geist, Geist_Mono } from "next/font/google";
 
@@ -41,11 +39,6 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col">
         <ClerkProvider>
-          <header className="flex justify-end items-center p-4 gap-4 h-16">
-            <Show when="signed-in">
-              <UserButton />
-            </Show>
-          </header>
           {children}
         </ClerkProvider>
       </body>

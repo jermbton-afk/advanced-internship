@@ -6,7 +6,7 @@ import BsStarFill from "./components/BsStarFill";
 import BiCrown from "./components/BiCrown";
 import BsStarHalf from "./components/BsStarHalf";
 import RiLeafLine from "./components/RiLeafLine";
-import { Show, SignInButton, useSignIn } from "@clerk/nextjs";
+import { Show, SignInButton, UserButton, useSignIn } from "@clerk/nextjs";
 import { useState } from "react";
 
 export default function Home() {
@@ -102,10 +102,12 @@ export default function Home() {
                 </button>
               </li>
             </Show>
-
             <li className="nav__list nav__list--mobile">About</li>
             <li className="nav__list nav__list--mobile">Contact</li>
             <li className="nav__list nav__list--mobile">Help</li>
+            <Show when="signed-in">
+              <UserButton />
+            </Show>
           </ul>
         </div>
       </nav>
